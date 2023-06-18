@@ -1,5 +1,9 @@
 package com.example.feihub_andriod.services
+import android.util.Log
+import android.widget.Toast
 import com.example.feihub_andriod.data.model.*
+import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
@@ -7,49 +11,94 @@ import java.io.IOException
 
 class UsersAPIServices {
     private val httpClient: Retrofit = Retrofit.Builder()
-        .baseUrl("http://localhost:8083/apiusersfeihub")
+        .baseUrl("http://10.0.2.2:8083/apiusersfeihub/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    suspend fun getUserCredentials(username: String, password: String): UserCredentials? {
+    fun getUserCredentials(username: String, password: String): UserCredentials {
         val service = httpClient.create(IUsersAPIServices::class.java)
-        try {
-            val response = service.getUserCredentials(username, password)
-            val userCredentials = response.body()
-            if (userCredentials != null) {
-                userCredentials.statusCode = response.code()
-            }
+        var userCredentials = UserCredentials()
+        val credentials = HashMap<String, String>()
+        credentials["username"] = username
+        credentials["password"] = password
+        val call = service.getUserCredentials(credentials)
+        val response = call.execute()
+        if (response.isSuccessful) {
+            val userCredentials = response.body()!!
+            userCredentials.statusCode = 200
             return userCredentials
-        } catch (ex: IOException) {
+        } else {
             val userCredentials = UserCredentials()
-            userCredentials.username = null
             userCredentials.statusCode = 500
             return userCredentials
         }
     }
 
-    suspend fun createCredentials(newCredentials: Credentials): Int {
+    fun createCredentials(newCredentials: Credentials): Int {
         val service = httpClient.create(IUsersAPIServices::class.java)
-        val requestData = newCredentials
+        var responseCode = 0
         try {
-            val response = service.createCredentials(requestData)
-            return response.code()
+            val call = service.createCredentials(newCredentials)
+            call.enqueue(object : retrofit2.Callback<Int> {
+                override fun onResponse(
+                    call: Call<Int>,
+                    response: Response<Int>
+                ) {
+                    if (response.isSuccessful) {
+                        responseCode = response.code()
+
+                    } else {
+                        responseCode = 500
+                    }
+                }
+
+                override fun onFailure(call: Call<Int>, t: Throwable) {
+                    responseCode = 500
+                }
+            })
+            return responseCode
         } catch (ex: IOException) {
-            return 500
+            responseCode = 500
+            return responseCode
         }
     }
 
-    suspend fun createUser(newUser: User, rol: Int): Int {
+    fun createUser(newUser: User, rol: Int): Int {
         val service = httpClient.create(IUsersAPIServices::class.java)
+        var responseCode = 0
         val body = object {
             val newUser = newUser
             val rol = rol
         }
         try {
-            val response = service.createUser(body)
-            return response.code()
+            val call = service.createUser(body)
+            call.enqueue(object : retrofit2.Callback<Int> {
+                override fun onResponse(
+                    call: Call<Int>,
+                    response: Response<Int>
+                ) {
+                    if (response.isSuccessful) {
+                        responseCode = response.code()
+
+                    } else {
+                        responseCode = 500
+                    }
+                }
+
+                override fun onFailure(call: Call<Int>, t: Throwable) {
+                    responseCode = 500
+                }
+            })
+            return responseCode
         } catch (ex: IOException) {
-            return 500
+            responseCode = 500
+            return responseCode
+        }
+    }
+
+    companion object {
+        fun create() {
+            TODO("Not yet implemented")
         }
     }
 }

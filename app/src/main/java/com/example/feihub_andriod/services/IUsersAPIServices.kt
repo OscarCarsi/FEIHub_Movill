@@ -1,15 +1,16 @@
 package com.example.feihub_andriod.services
 import com.example.feihub_andriod.data.model.*;
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.Response
 interface IUsersAPIServices {
-    @POST("/credentials/login")
-    suspend fun getUserCredentials(@Body username: String, password: String): Response<UserCredentials>
+    @POST("credentials/login")
+    fun getUserCredentials(@Body credentials: HashMap<String, String>): Call<UserCredentials>
 
-    @POST("/credentials")
-    suspend fun createCredentials(@Body newCredentials: Credentials): Response<Int>
+    @POST("credentials")
+    fun createCredentials(@Body newCredentials: Credentials): Call<Int>
 
-    @POST("/users")
-    suspend fun createUser(@Body body: Any): Response<Int>
+    @POST("users")
+    fun createUser(@Body body: Any): Call<Int>
 }
