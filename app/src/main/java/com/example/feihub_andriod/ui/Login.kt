@@ -1,5 +1,6 @@
 package com.example.feihub_andriod.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -24,9 +25,18 @@ class Login : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         val btnLogin = findViewById<Button>(R.id.login)
-        val signup = findViewById<AppCompatTextView>(R.id.Singin)
+        val singinStudent = findViewById<TextView>(R.id.registerStudent)
+        val singinAcademic = findViewById<TextView>(R.id.registerAcademic)
         btnLogin.setOnClickListener {
             login()
+        }
+        singinStudent.setOnClickListener{
+            val intent = Intent(this, com.example.feihub_andriod.ui.ResgisterStudents::class.java)
+            startActivity(intent)
+        }
+        singinAcademic.setOnClickListener{
+            val intent = Intent(this, com.example.feihub_andriod.ui.RegisterAcademics::class.java)
+            startActivity(intent)
         }
     }
 
@@ -35,7 +45,6 @@ class Login : AppCompatActivity() {
         val password = findViewById<EditText>(R.id.password).text.toString()
         var hashedPassword = hasher.hash(password)
         val notNullFields = validateNullFields(username, password)
-        Log.d("TAG", notNullFields.toString())
         if(notNullFields){
             CoroutineScope(Dispatchers.Main).launch {
                 try {

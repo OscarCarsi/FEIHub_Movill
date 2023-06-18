@@ -2,6 +2,9 @@ package com.example.feihub_andriod.services
 import android.util.Log
 import android.widget.Toast
 import com.example.feihub_andriod.data.model.*
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -39,23 +42,13 @@ class UsersAPIServices {
         var responseCode = 0
         try {
             val call = service.createCredentials(newCredentials)
-            call.enqueue(object : retrofit2.Callback<Int> {
-                override fun onResponse(
-                    call: Call<Int>,
-                    response: Response<Int>
-                ) {
-                    if (response.isSuccessful) {
-                        responseCode = response.code()
+            val response = call.execute()
+            if (response.isSuccessful) {
+                responseCode = 200
 
-                    } else {
-                        responseCode = 500
-                    }
-                }
-
-                override fun onFailure(call: Call<Int>, t: Throwable) {
-                    responseCode = 500
-                }
-            })
+            } else {
+                responseCode = 500
+            }
             return responseCode
         } catch (ex: IOException) {
             responseCode = 500
@@ -63,36 +56,61 @@ class UsersAPIServices {
         }
     }
 
-    fun createUser(newUser: User, rol: Int): Int {
+    fun createUser(newUser: User, rol: String): Int {
         val service = httpClient.create(IUsersAPIServices::class.java)
         var responseCode = 0
-        val body = object {
-            val newUser = newUser
-            val rol = rol
+        val jsonBody = JsonObject().apply {
+            addProperty("username", newUser.username)
+            addProperty("name", newUser.name)
+            addProperty("paternalSurname", newUser.paternalSurname)
+            addProperty("maternalSurname", newUser.maternalSurname)
+            addProperty("schoolId", newUser.schoolId)
+            addProperty("educationalProgram", newUser.educationalProgram)
+            addProperty("rol", rol)
         }
-        try {
-            val call = service.createUser(body)
-            call.enqueue(object : retrofit2.Callback<Int> {
-                override fun onResponse(
-                    call: Call<Int>,
-                    response: Response<Int>
-                ) {
-                    if (response.isSuccessful) {
-                        responseCode = response.code()
 
-                    } else {
-                        responseCode = 500
-                    }
-                }
+        val call = service.createUser(jsonBody)
+        val response = call.execute()
 
-                override fun onFailure(call: Call<Int>, t: Throwable) {
-                    responseCode = 500
-                }
-            })
-            return responseCode
-        } catch (ex: IOException) {
+        if (response.isSuccessful) {
+            responseCode = 200
+
+        } else {
             responseCode = 500
-            return responseCode
+        }
+        return responseCode
+    }
+    fun getUser(username: String): User? {
+        val service = httpClient.create(IUsersAPIServices::class.java)
+        val call = service.getUser(username)
+        val response = call.execute()
+        if (response.isSuccessful) {
+            val user = response.body()
+            if(user != null){
+                return user
+            }
+            else{
+                return null
+            }
+        } else {
+            return null
+        }
+    }
+    fun getExistingUser(email: String): String? {
+        val service = httpClient.create(IUsersAPIServices::class.java)
+        val call = service.getExistingUser(email)
+        val response = call.execute()
+        if (response.isSuccessful) {
+            val credentials = response.body()
+            if(credentials != null){
+                val email = credentials?.email
+                return email
+            }
+            else{
+                return null
+            }
+        } else {
+            return null
         }
     }
 
@@ -101,4 +119,5 @@ class UsersAPIServices {
             TODO("Not yet implemented")
         }
     }
+    data class CreateUserRequest(val newUser: User, val rol: String)
 }
