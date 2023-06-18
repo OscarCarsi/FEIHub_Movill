@@ -12,5 +12,13 @@
     <string name="label_username">Nombre de usuario</string>
     <string name="label_password">Contraseña</string>
     <string name="label_button_login">Iniciar sesión</string>
+    <string-array name="educationalPrograms">
+        <item>Estadística</item>
+        <item>Ingeniería en Sistemas y Tecnologías de la Información</item>
+        <item>Ingeniería de Software</item>
+        <item>Redes y Servicios de Cómputo</item>
+        <item>Ingeniería en Ciberseguridad e Infrestructura de Cómputo</item>
+        <item>Tecnologías Computacionales</item>
+    </string-array>
 
 </resources>

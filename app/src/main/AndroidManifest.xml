@@ -17,10 +17,16 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.RegisterAcademics"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ResgisterStudents"
+            android:exported="false" />
+        <activity
             android:name=".ui.Login"
             android:exported="true"
             android:label="FEIHub"
-            android:theme="@style/Theme.FEIHub_Andriod" >
+            android:theme="@style/Theme.FEIHub_Andriod">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

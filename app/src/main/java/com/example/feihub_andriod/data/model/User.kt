@@ -1,12 +1,12 @@
 package com.example.feihub_andriod.data.model
 
 data class User(
-    val username: String,
-    val name: String,
-    val paternalSurname: String,
-    val maternalSurname: String,
-    val schoolId: String,
-    val educationalProgram: String,
-    val profilePhoto: String?,
-    val statusCode: Int
+    var username: String? = null,
+    var name: String? = null,
+    var paternalSurname: String? = null,
+    var maternalSurname: String? = null,
+    var schoolId: String? = null,
+    var educationalProgram: String? = null,
+    var profilePhoto: String? = null,
+    var statusCode: Int? = null
 )
