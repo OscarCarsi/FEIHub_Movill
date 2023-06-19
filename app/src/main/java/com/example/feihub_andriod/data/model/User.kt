@@ -1,5 +1,5 @@
 package com.example.feihub_andriod.data.model
-
+import java.io.Serializable
 data class User(
     var username: String? = null,
     var name: String? = null,
@@ -9,4 +9,4 @@ data class User(
     var educationalProgram: String? = null,
     var profilePhoto: String? = null,
     var statusCode: Int? = null
-)
+): Serializable

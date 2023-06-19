@@ -16,24 +16,6 @@
         android:textColor="@android:color/black"
         android:textSize="26sp" />
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/setting_profile_image"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:layout_marginStart="140dp"
-        android:layout_marginTop="40dp"
-        android:src="@drawable/usuario" />
-
-    <TextView
-        android:id="@+id/profilePhotoButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Actualizar foto de perfil"
-        android:textAlignment="center"
-        android:textColor="@android:color/black"
-        android:textSize="20sp" />
-
     <EditText
         android:id="@+id/nameEdited"
         android:layout_width="384dp"

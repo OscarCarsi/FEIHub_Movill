@@ -13,6 +13,8 @@ import java.io.IOException
 
 
 class UsersAPIServices {
+    private val CODE_SUCESSFUL = 200
+    private val CODE_SERVER_INTERNAL_ERROR = 500
     private val httpClient: Retrofit = Retrofit.Builder()
         .baseUrl("http://10.0.2.2:8083/apiusersfeihub/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -28,11 +30,11 @@ class UsersAPIServices {
         val response = call.execute()
         if (response.isSuccessful) {
             val userCredentials = response.body()!!
-            userCredentials.statusCode = 200
+            userCredentials.statusCode = CODE_SUCESSFUL
             return userCredentials
         } else {
             val userCredentials = UserCredentials()
-            userCredentials.statusCode = 500
+            userCredentials.statusCode = CODE_SERVER_INTERNAL_ERROR
             return userCredentials
         }
     }
@@ -44,14 +46,14 @@ class UsersAPIServices {
             val call = service.createCredentials(newCredentials)
             val response = call.execute()
             if (response.isSuccessful) {
-                responseCode = 200
+                responseCode = CODE_SUCESSFUL
 
             } else {
-                responseCode = 500
+                responseCode = CODE_SERVER_INTERNAL_ERROR
             }
             return responseCode
         } catch (ex: IOException) {
-            responseCode = 500
+            responseCode = CODE_SERVER_INTERNAL_ERROR
             return responseCode
         }
     }
@@ -73,10 +75,10 @@ class UsersAPIServices {
         val response = call.execute()
 
         if (response.isSuccessful) {
-            responseCode = 200
+            responseCode = CODE_SUCESSFUL
 
         } else {
-            responseCode = 500
+            responseCode = CODE_SERVER_INTERNAL_ERROR
         }
         return responseCode
     }
@@ -112,6 +114,26 @@ class UsersAPIServices {
         } else {
             return null
         }
+    }
+    fun editUser(newUser: User): Int {
+        val service = httpClient.create(IUsersAPIServices::class.java)
+
+        val username = newUser.username ?: ""
+        val token = SingletonUser.token ?: ""
+
+        try{
+            val call = service.editUser(username, newUser, token)
+
+            val response = call.execute()
+            return if (response.isSuccessful) {
+                CODE_SUCESSFUL
+            } else {
+                CODE_SERVER_INTERNAL_ERROR
+            }
+        }catch (E: Exception){
+            return CODE_SERVER_INTERNAL_ERROR
+        }
+
     }
 
     companion object {

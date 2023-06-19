@@ -1,12 +1,14 @@
 package com.example.feihub_andriod.ui
 
 import android.app.ProgressDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.feihub_andriod.R
@@ -62,7 +64,13 @@ class ProfileFragment : Fragment() {
         username = arguments?.getString(ARG_USERNAME)
         addData()
         editProfileButton.setOnClickListener {
-            //startActivity(Intent(activity, EditProfilePage::class.java))
+            val intent = Intent(requireContext(), EditProfile::class.java)
+            intent.putExtra("user", userObtained)
+            if (userObtained != null) {
+                startActivity(intent)
+            } else {
+                Toast.makeText(context, userObtained.username, Toast.LENGTH_SHORT).show()
+            }
         }
         return view
     }
@@ -87,7 +95,7 @@ class ProfileFragment : Fragment() {
                     .into(profilePhoto)
             }
             name.text = "%s %s %s".format(userObtained.name, userObtained.paternalSurname, userObtained.maternalSurname)
-            if(userObtained.username == SingletonUser.username){
+            if(userObtained.username != SingletonUser.username){
                 editProfileButton.visibility = View.INVISIBLE
             }
         }
