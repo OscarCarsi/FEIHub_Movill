@@ -1,26 +1,23 @@
 package com.example.feihub_andriod.ui
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.*
-import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.app.AppCompatActivity
 import com.example.feihub_andriod.R
-import com.example.feihub_andriod.R.id.login
 import com.example.feihub_andriod.data.model.Hasher
-import com.example.feihub_andriod.services.IUsersAPIServices
+import com.example.feihub_andriod.data.model.SingletonUser
 import com.example.feihub_andriod.services.UsersAPIServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 class Login : AppCompatActivity() {
     private val usersAPIServices = UsersAPIServices()
     private val hasher = Hasher()
+    var user: SingletonUser = SingletonUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -53,6 +50,11 @@ class Login : AppCompatActivity() {
                     }
                     if (userCredentials.statusCode == 200) {
                         Toast.makeText(applicationContext, "Bienvenido $username", Toast.LENGTH_SHORT).show()
+                        user.username = userCredentials.username;
+                        user.rol = userCredentials.rol;
+                        user.token = userCredentials.token;
+                        val intent = Intent(applicationContext, DashboardActivity::class.java)
+                        startActivity(intent)
                     } else {
                         Toast.makeText(applicationContext, "Verifica tus credenciales", Toast.LENGTH_SHORT).show()
                     }
@@ -63,7 +65,6 @@ class Login : AppCompatActivity() {
         } else {
             Toast.makeText(applicationContext, "No puedes dejar campos vacíos", Toast.LENGTH_SHORT).show()
         }
-
 
     }
     private fun validateNullFields(username: String, password: String ): Boolean{
