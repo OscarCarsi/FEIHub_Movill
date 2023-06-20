@@ -135,6 +135,24 @@ class UsersAPIServices {
         }
 
     }
+    fun findUsers(username: String): List<User> {
+        val service = httpClient.create(IUsersAPIServices::class.java)
+
+        val call = service.findUsers(username, SingletonUser.token!!)
+        val response = call.execute()
+        val users: List<User> = if (response.isSuccessful) {
+            val userList = response.body() ?: emptyList()
+            if (userList.isNotEmpty()) {
+                userList[0].statusCode = 200
+            }
+            userList
+        } else {
+            val errorUser = User()
+            errorUser.statusCode = 500
+            listOf(errorUser)
+        }
+        return users
+    }
 
     companion object {
         fun create() {

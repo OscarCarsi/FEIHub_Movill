@@ -27,4 +27,6 @@ interface IUsersAPIServices {
     fun getExistingUser(@Path("email") email: String) : Call<Credentials>
     @PUT("users/{username}")
     fun editUser(@Path("username") username: String, @Body newUser: User, @Header("token") token:String) : Call<List<Int>>
+    @GET("users/findUsers/{username}")
+    fun findUsers(@Path("username") username:String, @Header("token") token:String) : Call<List<User>>
 }
