@@ -1,60 +1,124 @@
 package com.example.feihub_andriod.ui
 
+import android.app.ProgressDialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.example.feihub_andriod.R
+import com.example.feihub_andriod.data.model.Photo
+import com.example.feihub_andriod.data.model.Posts
+import com.example.feihub_andriod.data.model.SingletonUser
+import com.example.feihub_andriod.services.PostsAPIServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Calendar
+import java.util.Date
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AddPostFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AddPostFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var title: EditText
+    private lateinit var description: EditText
+    private lateinit var pd: ProgressDialog
+    private lateinit var upload: Button
+    private lateinit var spinnerTarget: Spinner
+    var newPost = Posts()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_post, container, false)
-    }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddPostFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddPostFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        val view = inflater.inflate(R.layout.fragment_add_post, container, false)
+
+        title = view.findViewById(R.id.textTitle)
+        description = view.findViewById(R.id.textDescription)
+        upload = view.findViewById(R.id.buttonUpload)
+        pd = ProgressDialog(requireContext())
+        pd.setCanceledOnTouchOutside(false)
+        val intent = activity?.intent
+        val postsAPIServices = PostsAPIServices()
+        spinnerTarget = view.findViewById(R.id.spinnerTarget)
+        val adapter = ArrayAdapter.createFromResource(requireContext(), R.array.target, android.R.layout.simple_spinner_item)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerTarget.adapter = adapter
+        upload.setOnClickListener {
+            val titleText = title.text.toString().trim { it <= ' ' }
+            val descriptionText = description.text.toString().trim { it <= ' ' }
+
+            if (TextUtils.isEmpty(titleText)) {
+                title.error = "Título vacío"
+                Toast.makeText(context, "No puedes dejar vacío el título", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
             }
+
+            if (TextUtils.isEmpty(descriptionText)) {
+                description.error = "Descripción vacía"
+                Toast.makeText(context, "No puedes dejar vacía la descripción", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            fun getCurrentDate(): Date {
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.DAY_OF_YEAR, -1) // Restar un día
+                return calendar.time
+            }
+            CoroutineScope(Dispatchers.Main).launch {
+
+                newPost.author = SingletonUser.username!!
+                newPost.body = descriptionText
+                newPost.title = titleText
+                if(spinnerTarget.selectedItem as? String == "Académicos"){
+                    newPost.target = "ACADEMIC"
+                }
+                if(spinnerTarget.selectedItem as? String == "Estudiantes"){
+                    newPost.target ="STUDENT"
+                }
+                if(spinnerTarget.selectedItem as? String == "Todos"){
+                    newPost.target = "EVERYBODY"
+                }
+                newPost.photos = emptyArray()
+                newPost.dateOfPublish = getCurrentDate()
+
+
+                val responseCode = withContext(Dispatchers.IO) {
+                    async { postsAPIServices.addPost(newPost) }.await()!!
+                }
+                if(responseCode == 200){
+                    Toast.makeText(
+                        context,
+                        "Publiacación creada",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else{
+                    Toast.makeText(
+                        context,
+                        "Error al crear la publicación" +
+                                "",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+
+            }
+
+
+        }
+        return view
     }
 }

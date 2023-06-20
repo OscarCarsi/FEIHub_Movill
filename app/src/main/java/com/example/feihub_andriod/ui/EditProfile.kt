@@ -4,48 +4,26 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.feihub_andriod.R
 import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.text.Editable
-import android.text.TextUtils;
-import android.util.Log
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.result.contract.ActivityResultContracts
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.example.feihub_andriod.data.model.SingletonUser
 import com.example.feihub_andriod.data.model.User
-import com.example.feihub_andriod.services.S3Service
 import com.example.feihub_andriod.services.UsersAPIServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-import java.util.HashMap;
 
 class EditProfile : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     private val storagepath = "Users_Profile_Cover_image/"
@@ -69,7 +47,6 @@ class EditProfile : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
     private val imagePickRequestCode = 456
     private val REQUEST_PERMISSION = 1
     private val REQUEST_IMAGE_PICK = 2
-    val s3Service = S3Service()
     val usersAPIServices = UsersAPIServices()
     var newUser = User()
     var imagePath: String? = null
@@ -91,17 +68,7 @@ class EditProfile : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
         name.text = Editable.Factory.getInstance().newEditable(user!!.name)
         paternalSurname.text = Editable.Factory.getInstance().newEditable(user!!.paternalSurname)
         maternalSurname.text = Editable.Factory.getInstance().newEditable(user!!.maternalSurname)
-        if (user.profilePhoto != null) {
-            val requestOptions = RequestOptions()
-                .placeholder(R.drawable.usuario)
-                .error(R.drawable.ic_errorimage)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-            Glide.with(this)
-                .load(user.profilePhoto)
-                .apply(requestOptions)
-                .into(photo)
-        }
+
 
         saveChanges.setOnClickListener {
             pd.setMessage("Guardando cambios")

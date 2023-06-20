@@ -20,6 +20,11 @@
         <item>Ingeniería en Ciberseguridad e Infrestructura de Cómputo</item>
         <item>Tecnologías Computacionales</item>
     </string-array>
+    <string-array name="target">
+        <item>Estudiantes</item>
+        <item>Académicos</item>
+        <item>Todos</item>
+    </string-array>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
