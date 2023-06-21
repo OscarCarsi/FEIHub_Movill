@@ -9,6 +9,7 @@ import android.widget.SearchView;
 import android.widget.Toast
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.feihub_andriod.R
@@ -28,6 +29,7 @@ class UsersFragment : Fragment() {
     private lateinit var adapterUsers: AdapterUsers
     private lateinit var usersList: MutableList<User>
     private val usersAPIServices = UsersAPIServices()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_users, container, false)
         recyclerView = view.findViewById(R.id.recyclep)
@@ -37,8 +39,6 @@ class UsersFragment : Fragment() {
         return view
     }
 
-
-
     private fun searchUsers(search: String) {
         CoroutineScope(Dispatchers.Main).launch {
             usersList = withContext(Dispatchers.IO) {
@@ -47,6 +47,15 @@ class UsersFragment : Fragment() {
             if (usersList.isNotEmpty()) {
                 if (usersList[0].statusCode == 200) {
                     adapterUsers = AdapterUsers(requireActivity(), usersList)
+                    adapterUsers.setOnItemClickListener(object : AdapterUsers.OnItemClickListener {
+                        override fun onItemClick(user: User) {
+                            val username = user.username
+                            val fragmentProfile = ProfileFragment.newInstance(username!!)
+                            val fragmentTransactionProfile: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+                            fragmentTransactionProfile.replace(R.id.content, fragmentProfile)
+                            fragmentTransactionProfile.commit()
+                        }
+                    })
                     recyclerView.adapter = adapterUsers
                 } else {
                     Toast.makeText(context, "Error al obtener los usuarios", Toast.LENGTH_SHORT).show()
@@ -55,17 +64,6 @@ class UsersFragment : Fragment() {
                 Toast.makeText(context, "No existen usuarios con la información proporcionada", Toast.LENGTH_SHORT).show()
             }
         }
-        if(usersList.size > 0 ){
-            adapterUsers = AdapterUsers(requireActivity(), usersList)
-            adapterUsers.notifyDataSetChanged()
-            recyclerView.adapter = adapterUsers
-        }
-        else{
-            Toast.makeText(context, "No existen usuarios con la información proporcionada", Toast.LENGTH_SHORT).show()
-        }
-
-
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

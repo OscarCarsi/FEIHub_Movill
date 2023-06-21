@@ -10,15 +10,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.feihub_andriod.R
-import com.example.feihub_andriod.data.model.User
-import com.example.feihub_andriod.services.UsersAPIServices
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.example.feihub_andriod.R
+import com.example.feihub_andriod.data.model.Posts
 import com.example.feihub_andriod.data.model.SingletonUser
+import com.example.feihub_andriod.data.model.User
+import com.example.feihub_andriod.services.PostsAPIServices
+import com.example.feihub_andriod.services.UsersAPIServices
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -34,7 +37,10 @@ class ProfileFragment : Fragment() {
     private lateinit var editProfileButton: FloatingActionButton
     private lateinit var pd: ProgressDialog
     private var userObtained = User()
+    private lateinit var posts: MutableList<Posts>
+    var adapterPosts: AdapterPosts? = null
     private val usersAPIServices = UsersAPIServices()
+    private val postsAPIServices = PostsAPIServices()
     companion object {
         private const val ARG_USERNAME = "username"
 
@@ -54,6 +60,7 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
+        postrecycle = view.findViewById(R.id.recyclerposts)
         profilePhoto = view.findViewById(R.id.profilePhoto)
         usernameUser = view.findViewById(R.id.usernameUser)
         schoolId = view.findViewById(R.id.schoolIdUser)
@@ -63,6 +70,7 @@ class ProfileFragment : Fragment() {
         pd.setCanceledOnTouchOutside(false)
         username = arguments?.getString(ARG_USERNAME)
         addData()
+        loadMyPosts()
         editProfileButton.setOnClickListener {
             val intent = Intent(requireContext(), EditProfile::class.java)
             intent.putExtra("user", userObtained)
@@ -101,6 +109,32 @@ class ProfileFragment : Fragment() {
         }
 
     }
+    private fun loadMyPosts() {
+        val layoutManager = LinearLayoutManager(activity)
+        layoutManager.reverseLayout = true
+        layoutManager.stackFromEnd = true
+        postrecycle.layoutManager = layoutManager
+        CoroutineScope(Dispatchers.Main).launch {
+            posts = withContext(Dispatchers.IO) {
+                async { postsAPIServices.getPostsByUsername(username!!) }.await()!!
+            } as MutableList<Posts>
+            if (posts.isNotEmpty()) {
+                if(posts[0].statusCode == 200){
+                    adapterPosts = AdapterPosts(requireContext(), posts!!)
+                    postrecycle.adapter = adapterPosts
+                }
+                else{
+                    Toast.makeText(context, "Error al obtener los posts", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "No existen posts recientes", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

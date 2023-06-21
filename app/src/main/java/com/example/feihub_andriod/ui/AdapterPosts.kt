@@ -1,5 +1,6 @@
 package com.example.feihub_andriod.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
@@ -15,7 +16,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -24,6 +27,7 @@ import com.example.feihub_andriod.R
 import com.example.feihub_andriod.data.model.Comment
 import com.example.feihub_andriod.data.model.Posts
 import com.example.feihub_andriod.data.model.SingletonUser
+import com.example.feihub_andriod.services.PostsAPIServices
 import com.example.feihub_andriod.services.UsersAPIServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +41,9 @@ class AdapterPosts(private val context: Context, private val modelPosts: Mutable
     RecyclerView.Adapter<AdapterPosts.MyHolder>() {
     private var mprocesslike = false
     private val usersAPIServices = UsersAPIServices()
+    private val postsAPIServices = PostsAPIServices()
+    private var likeStatus = false
+    private var dislikeStatus = false
 
     @NonNull
     override fun onCreateViewHolder(@NonNull parent: ViewGroup, viewType: Int): MyHolder {
@@ -50,22 +57,37 @@ class AdapterPosts(private val context: Context, private val modelPosts: Mutable
         val title: String = modelPosts[position].title!!
         val body: String = modelPosts[position].body!!
         val date: Date = modelPosts[position].dateOfPublish!!
-        val likes: Int = modelPosts[position].likes!!
-        val dislikes: Int = modelPosts[position].dislikes!!
+        var likes: Int = modelPosts[position].likes!!
+        var dislikes: Int = modelPosts[position].dislikes!!
         var image: String? = null
         if(modelPosts[position].photos!!.size > 0){
              image = modelPosts[position].photos?.get(0)?.url!!
         }
-        val comments: Array<Comment>? = modelPosts[position].comments
+        val comments: MutableList<Comment>? = modelPosts[position].comments
         val calendar: Calendar = Calendar.getInstance(Locale.ENGLISH)
-        val timedate: String = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString()
+        val timedate: String = DateFormat.format("dd/MM/yyyy", calendar).toString()
         holder.username.text = username
         holder.title.text = title
         holder.body.text = body
         holder.time.text = date.toString()
         holder.like.text = "$likes Likes"
         holder.dislikes.text = "$dislikes Dislikes"
-        setLikes(holder, date.toString())
+        val buttonSize = 80
+
+        val likeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_like)
+        likeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+        val dislikeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_dislike)
+        dislikeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+        val commentDrawable = ContextCompat.getDrawable(context, R.drawable.ic_comment)
+        commentDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+        val reportDrawable = ContextCompat.getDrawable(context, R.drawable.ic_report)
+        reportDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+
+        holder.likebtn.setCompoundDrawables(likeDrawable, null, null, null)
+        holder.dislikebtn.setCompoundDrawables(dislikeDrawable, null, null, null)
+        holder.commentbtn.setCompoundDrawables(commentDrawable, null, null, null)
+        holder.reportbtn.setCompoundDrawables(reportDrawable, null, null, null)
+
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
                 val userObtained = usersAPIServices.getUser(username!!)
@@ -98,11 +120,6 @@ class AdapterPosts(private val context: Context, private val modelPosts: Mutable
         else{
             holder.image.visibility = View.INVISIBLE
         }
-        holder.like.setOnClickListener {
-            val intent = Intent(holder.itemView.context, PostLikedByActivity::class.java)
-            intent.putExtra("pid", id)
-            holder.itemView.context.startActivity(intent)
-        }
         holder.likebtn.setOnClickListener {
             val plike = modelPosts[position].likes
             mprocesslike = true
@@ -110,37 +127,149 @@ class AdapterPosts(private val context: Context, private val modelPosts: Mutable
 
         }
         holder.more.setOnClickListener {
-            if(image != null){
-                showMoreOptions(holder.more, username, SingletonUser.username!!,id, image)
-            }
-
-        }
+            showMoreOptions(holder.more, username,id)
+                    }
         holder.commentbtn.setOnClickListener {
+
             val intent = Intent(context, PostDetailsActivity::class.java)
-            intent.putExtra("pid", id)
+            intent.putExtra("post", modelPosts[position])
             context.startActivity(intent)
+        }
+        holder.likebtn.setOnClickListener {
+            if(likeStatus == false){
+                likes++
+                CoroutineScope(Dispatchers.Main).launch {
+                    withContext(Dispatchers.IO) {
+                        val statusCode = postsAPIServices.addLike(id)
+                        if (statusCode == 200) {
+                            (context as Activity).runOnUiThread {
+                                val likeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_liked)
+                                likeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+                                holder.likebtn.setCompoundDrawables(likeDrawable, null, null, null)
+                                holder.like.text = "$likes Likes"
+                                likeStatus = true
+                            }
+                        } else {
+                            (context as Activity).runOnUiThread {
+                                Toast.makeText(context, "No pudimos agregar el like", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            }else{
+                likes--
+                CoroutineScope(Dispatchers.Main).launch {
+                    withContext(Dispatchers.IO) {
+                        val statusCode = postsAPIServices.removelike(id)
+                        if(statusCode == 200){
+                            (context as Activity).runOnUiThread {
+                                val likeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_like)
+                                likeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+                                holder.likebtn.setCompoundDrawables(likeDrawable, null, null, null)
+                                holder.like.text = "$likes Likes"
+                                likeStatus = false
+                            }
+                        }else{
+                            (context as Activity).runOnUiThread {
+                                Toast.makeText(context, "No pudimos remover el like", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        holder.dislikebtn.setOnClickListener {
+            if(dislikeStatus == false){
+                dislikes++
+                CoroutineScope(Dispatchers.Main).launch {
+                    withContext(Dispatchers.IO) {
+                        val statusCode = postsAPIServices.addDislike(id)
+                        if(statusCode == 200){
+                            (context as Activity).runOnUiThread {
+                                val likeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_disliked)
+                                likeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+                                holder.dislikebtn.setCompoundDrawables(likeDrawable, null, null, null)
+                                dislikeStatus = true
+                                holder.dislikes.text = "$dislikes Dislikes"
+                            }
+
+                        }else{
+                            (context as Activity).runOnUiThread {
+                                Toast.makeText(context, "No pudimos agregar el dislike", Toast.LENGTH_LONG).show()
+                            }
+
+                        }
+                    }
+                }
+            }else{
+                dislikes--
+                CoroutineScope(Dispatchers.Main).launch {
+                    withContext(Dispatchers.IO) {
+                        val statusCode = postsAPIServices.removeDislike(id)
+                        if(statusCode == 200){
+                            (context as Activity).runOnUiThread {
+                                val likeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_dislike)
+                                likeDrawable?.setBounds(0, 0, buttonSize, buttonSize)
+                                holder.dislikebtn.setCompoundDrawables(likeDrawable, null, null, null)
+                                dislikeStatus = false
+                                holder.dislikes.text = "$dislikes Dislikes"
+                            }
+
+                        }else{
+                            (context as Activity).runOnUiThread {
+                                Toast.makeText(context, "No puedimos remover el dislike", Toast.LENGTH_LONG).show()
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        holder.reportbtn.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch {
+                withContext(Dispatchers.IO) {
+                    val statusCode = postsAPIServices.addReport(id)
+                    if(statusCode == 200){
+                        (context as Activity).runOnUiThread {
+                            Toast.makeText(context, "Publicación reportada", Toast.LENGTH_LONG).show()
+                        }
+
+                    }else{
+                        (context as Activity).runOnUiThread {
+                            Toast.makeText(context, "No puedimos reportar esta publicacíon", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private fun showMoreOptions(more: ImageButton, uid: String, myuid: String, pid: String, image: String) {
+    private fun showMoreOptions(more: ImageButton, username: String, idPos: String) {
         val popupMenu = PopupMenu(context, more, Gravity.END)
-        if (uid == myuid) {
+        if (SingletonUser.username == username) {
             popupMenu.menu.add(Menu.NONE, 0, 0, "DELETE")
         }
         popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+            CoroutineScope(Dispatchers.Main).launch {
+                withContext(Dispatchers.IO) {
+                    val statusCode = postsAPIServices.deletePost(idPos)
+                    if(statusCode == 200){
+                        (context as Activity).runOnUiThread {
+                            Toast.makeText(context, "Publicación eliminada", Toast.LENGTH_LONG).show()
+                        }
 
+                    }else{
+                        (context as Activity).runOnUiThread {
+                            Toast.makeText(context, "No pudimos eliminar la publicación inténtalo más tarde", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
             false
         }
         popupMenu.show()
     }
 
-    private fun deltewithImage(pid: String) {
-
-    }
-
-    private fun setLikes(holder: MyHolder, pid: String) {
-
-    }
 
     override fun getItemCount(): Int {
         return modelPosts.size
