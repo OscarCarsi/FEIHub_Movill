@@ -1,5 +1,6 @@
 package com.example.feihub_andriod.data.model
 
+import java.io.Serializable
 import java.util.Date
 
 data class Posts(
@@ -14,8 +15,8 @@ data class Posts(
     var likes: Int? = null,
     var dislikes: Int? = null,
     var reports: Int? = null,
-    var comments: Array<Comment>? = null,
+    var comments: MutableList<Comment>? = null,
     var statusCode: Int? = null,
     var __v: Int? = null
-)
+): Serializable
 

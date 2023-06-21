@@ -57,14 +57,6 @@ class DashboardActivity : AppCompatActivity() {
                 fragmentTransactionUsers.commit()
                 true
             }
-            R.id.nav_chat -> {
-                actionBar.title = "Chats"
-                val listFragmentChat = ChatListFragment()
-                val fragmentTransactionChat: FragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransactionChat.replace(R.id.content, listFragmentChat, "")
-                fragmentTransactionChat.commit()
-                true
-            }
             R.id.nav_addblogs -> {
                 actionBar.title = "Agregar un post"
                 val fragmentAddPost = AddPostFragment()

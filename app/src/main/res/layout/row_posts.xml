@@ -31,7 +31,7 @@
                 android:src="@drawable/ic_account" />
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="257dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical">
@@ -54,9 +54,12 @@
 
             <ImageButton
                 android:id="@+id/morebtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@null" />
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@null"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_more" />
 
         </LinearLayout>
 
@@ -142,7 +145,7 @@
                 android:drawableStart="@drawable/ic_like"
                 android:drawableLeft="@drawable/ic_like"
                 android:padding="5dp"
-                android:text="Like" />
+                android:scaleType="fitCenter"/>
             <Button
                 android:id="@+id/dislike"
                 android:layout_width="wrap_content"
@@ -153,19 +156,18 @@
                 android:drawableStart="@drawable/ic_dislike"
                 android:drawableLeft="@drawable/ic_dislike"
                 android:padding="5dp"
-                android:text="Dislike" />
+                android:scaleType="fitCenter"/>
             <Button
                 android:id="@+id/comment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:autoLink="all"
-
+                android:scaleType="fitCenter"
                 android:background="@color/colorAccent"
                 android:drawableStart="@drawable/ic_comment"
                 android:drawableLeft="@drawable/ic_comment"
-                android:padding="5dp"
-                android:text="COMMENT" />
+                android:padding="5dp" />
             <Button
                 android:id="@+id/report"
                 android:layout_width="wrap_content"
@@ -176,7 +178,7 @@
                 android:drawableStart="@drawable/ic_report"
                 android:drawableLeft="@drawable/ic_report"
                 android:padding="5dp"
-                android:text="Report" />
+                android:scaleType="fitCenter"/>
         </LinearLayout>
 
     </LinearLayout>
