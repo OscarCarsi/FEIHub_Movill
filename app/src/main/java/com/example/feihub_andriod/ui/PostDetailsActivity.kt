@@ -317,7 +317,7 @@ class PostDetailsActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
                 val userObtained = usersAPIServices.getUser(hisname!!)
-                if(userObtained!!.profilePhoto != null){
+                if(userObtained?.profilePhoto != null){
                     val requestOptions = RequestOptions()
                         .placeholder(R.drawable.usuario)
                         .error(R.drawable.ic_errorimage)

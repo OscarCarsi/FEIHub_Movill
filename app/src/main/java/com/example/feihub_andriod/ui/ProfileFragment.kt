@@ -87,25 +87,30 @@ class ProfileFragment : Fragment() {
             userObtained = withContext(Dispatchers.IO) {
                 async { usersAPIServices.getUser(username!!) }.await()!!
             }
-            usernameUser.text = userObtained.username
-            if(userObtained.schoolId!=null){
-                schoolId.text = userObtained.schoolId
+            if(userObtained != null){
+                usernameUser.text = userObtained.username
+                if(userObtained.schoolId!=null){
+                    schoolId.text = userObtained.schoolId
+                }
+                if(userObtained.profilePhoto != null){
+                    val requestOptions = RequestOptions()
+                        .placeholder(R.drawable.usuario)
+                        .error(R.drawable.ic_errorimage)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .centerCrop()
+                    Glide.with(requireContext())
+                        .load(userObtained.profilePhoto)
+                        .apply(requestOptions)
+                        .into(profilePhoto)
+                }
+                name.text = "%s %s %s".format(userObtained.name, userObtained.paternalSurname, userObtained.maternalSurname)
+                if(userObtained.username != SingletonUser.username){
+                    editProfileButton.visibility = View.INVISIBLE
+                }
+            }else{
+                Toast.makeText(context, "Error al obtener el usuario", Toast.LENGTH_SHORT).show()
             }
-            if(userObtained.profilePhoto != null){
-                val requestOptions = RequestOptions()
-                    .placeholder(R.drawable.usuario)
-                    .error(R.drawable.ic_errorimage)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .centerCrop()
-                Glide.with(requireContext())
-                    .load(userObtained.profilePhoto)
-                    .apply(requestOptions)
-                    .into(profilePhoto)
-            }
-            name.text = "%s %s %s".format(userObtained.name, userObtained.paternalSurname, userObtained.maternalSurname)
-            if(userObtained.username != SingletonUser.username){
-                editProfileButton.visibility = View.INVISIBLE
-            }
+
         }
 
     }

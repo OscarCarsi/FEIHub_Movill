@@ -44,17 +44,19 @@ class AdapterComment(
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
                 val userObtained = usersAPIServices.getUser(username!!)
-                if(userObtained!!.profilePhoto != null){
-                    val requestOptions = RequestOptions()
-                        .placeholder(R.drawable.usuario)
-                        .error(R.drawable.ic_errorimage)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .centerCrop()
-                    withContext(Dispatchers.Main) {
-                        Glide.with(context)
-                            .load(userObtained.profilePhoto)
-                            .apply(requestOptions)
-                            .into(holder.profilePhoto)
+                if (userObtained != null){
+                    if(userObtained!!.profilePhoto != null){
+                        val requestOptions = RequestOptions()
+                            .placeholder(R.drawable.usuario)
+                            .error(R.drawable.ic_errorimage)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .centerCrop()
+                        withContext(Dispatchers.Main) {
+                            Glide.with(context)
+                                .load(userObtained.profilePhoto)
+                                .apply(requestOptions)
+                                .into(holder.profilePhoto)
+                        }
                     }
                 }
             }

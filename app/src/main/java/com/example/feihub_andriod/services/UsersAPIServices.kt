@@ -21,22 +21,29 @@ class UsersAPIServices {
         .build()
 
     fun getUserCredentials(username: String, password: String): UserCredentials {
-        val service = httpClient.create(IUsersAPIServices::class.java)
-        var userCredentials = UserCredentials()
-        val credentials = HashMap<String, String>()
-        credentials["username"] = username
-        credentials["password"] = password
-        val call = service.getUserCredentials(credentials)
-        val response = call.execute()
-        if (response.isSuccessful) {
-            val userCredentials = response.body()!!
-            userCredentials.statusCode = CODE_SUCESSFUL
-            return userCredentials
-        } else {
+        try{
+            val service = httpClient.create(IUsersAPIServices::class.java)
+            var userCredentials = UserCredentials()
+            val credentials = HashMap<String, String>()
+            credentials["username"] = username
+            credentials["password"] = password
+            val call = service.getUserCredentials(credentials)
+            val response = call.execute()
+            if (response.isSuccessful) {
+                val userCredentials = response.body()!!
+                userCredentials.statusCode = CODE_SUCESSFUL
+                return userCredentials
+            } else {
+                val userCredentials = UserCredentials()
+                userCredentials.statusCode = CODE_SERVER_INTERNAL_ERROR
+                return userCredentials
+            }
+        }catch(e: Exception){
             val userCredentials = UserCredentials()
             userCredentials.statusCode = CODE_SERVER_INTERNAL_ERROR
             return userCredentials
         }
+
     }
 
     fun createCredentials(newCredentials: Credentials): Int {
@@ -59,61 +66,76 @@ class UsersAPIServices {
     }
 
     fun createUser(newUser: User, rol: String): Int {
-        val service = httpClient.create(IUsersAPIServices::class.java)
-        var responseCode = 0
-        val jsonBody = JsonObject().apply {
-            addProperty("username", newUser.username)
-            addProperty("name", newUser.name)
-            addProperty("paternalSurname", newUser.paternalSurname)
-            addProperty("maternalSurname", newUser.maternalSurname)
-            addProperty("schoolId", newUser.schoolId)
-            addProperty("educationalProgram", newUser.educationalProgram)
-            addProperty("rol", rol)
+        try{
+            val service = httpClient.create(IUsersAPIServices::class.java)
+            var responseCode = 0
+            val jsonBody = JsonObject().apply {
+                addProperty("username", newUser.username)
+                addProperty("name", newUser.name)
+                addProperty("paternalSurname", newUser.paternalSurname)
+                addProperty("maternalSurname", newUser.maternalSurname)
+                addProperty("schoolId", newUser.schoolId)
+                addProperty("educationalProgram", newUser.educationalProgram)
+                addProperty("rol", rol)
+            }
+
+            val call = service.createUser(jsonBody)
+            val response = call.execute()
+
+            if (response.isSuccessful) {
+                responseCode = CODE_SUCESSFUL
+
+            } else {
+                responseCode = CODE_SERVER_INTERNAL_ERROR
+            }
+            return responseCode
+        }catch(e: Exception){
+            return CODE_SERVER_INTERNAL_ERROR
         }
 
-        val call = service.createUser(jsonBody)
-        val response = call.execute()
-
-        if (response.isSuccessful) {
-            responseCode = CODE_SUCESSFUL
-
-        } else {
-            responseCode = CODE_SERVER_INTERNAL_ERROR
-        }
-        return responseCode
     }
     fun getUser(username: String): User? {
-        val service = httpClient.create(IUsersAPIServices::class.java)
-        val call = service.getUser(username)
-        val response = call.execute()
-        if (response.isSuccessful) {
-            val user = response.body()
-            if(user != null){
-                return user
-            }
-            else{
+        try{
+            val service = httpClient.create(IUsersAPIServices::class.java)
+            val call = service.getUser(username)
+            val response = call.execute()
+            if (response.isSuccessful) {
+                val user = response.body()
+                if(user != null){
+                    return user
+                }
+                else{
+                    return null
+                }
+            } else {
                 return null
             }
-        } else {
+        }catch(e: Exception){
             return null
         }
+
     }
     fun getExistingUser(email: String): String? {
-        val service = httpClient.create(IUsersAPIServices::class.java)
-        val call = service.getExistingUser(email)
-        val response = call.execute()
-        if (response.isSuccessful) {
-            val credentials = response.body()
-            if(credentials != null){
-                val email = credentials?.email
-                return email
-            }
-            else{
+        try{
+            val service = httpClient.create(IUsersAPIServices::class.java)
+            val call = service.getExistingUser(email)
+            val response = call.execute()
+            if (response.isSuccessful) {
+                val credentials = response.body()
+                if(credentials != null){
+                    val email = credentials?.email
+                    return email
+                }
+                else{
+                    return null
+                }
+            } else {
                 return null
             }
-        } else {
+        }catch(e: Exception){
             return null
         }
+
     }
     fun editUser(newUser: User): Int {
         val service = httpClient.create(IUsersAPIServices::class.java)
@@ -136,22 +158,29 @@ class UsersAPIServices {
 
     }
     fun findUsers(username: String): List<User> {
-        val service = httpClient.create(IUsersAPIServices::class.java)
+        try{
+            val service = httpClient.create(IUsersAPIServices::class.java)
 
-        val call = service.findUsers(username, SingletonUser.token!!)
-        val response = call.execute()
-        val users: List<User> = if (response.isSuccessful) {
-            val userList = response.body() ?: emptyList()
-            if (userList.isNotEmpty()) {
-                userList[0].statusCode = 200
+            val call = service.findUsers(username, SingletonUser.token!!)
+            val response = call.execute()
+            val users: List<User> = if (response.isSuccessful) {
+                val userList = response.body() ?: emptyList()
+                if (userList.isNotEmpty()) {
+                    userList[0].statusCode = 200
+                }
+                userList
+            } else {
+                val errorUser = User()
+                errorUser.statusCode = 500
+                listOf(errorUser)
             }
-            userList
-        } else {
+            return users
+        }catch(e: Exception){
             val errorUser = User()
             errorUser.statusCode = 500
-            listOf(errorUser)
+            return listOf(errorUser)
         }
-        return users
+
     }
 
     companion object {
